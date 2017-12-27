@@ -25,6 +25,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var gameTimer: Timer!
     var WIDTH: CGFloat!
     var HEIGHT: CGFloat!
+    let alienCategory: UInt32 = 0x01 << 1
+    let photonTorpedoCategory: UInt32 = 0x01 << 0
     
     override func didMove(to view: SKView) {
         
@@ -51,7 +53,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scoreLabel.fontColor = UIColor.white
         self.addChild(scoreLabel)
         
-        gameTimer = Timer(timeInterval: 0.75, target: self, selector: #selector(addAlien), userInfo: nil, repeats: true)
+        gameTimer = Timer.scheduledTimer(timeInterval: 0.75, target: self, selector: #selector(addAlien), userInfo: nil, repeats: true)
     }
     
     @objc func addAlien() {
@@ -59,13 +61,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         possibleAliens = shuffeldArray
         
         let alien = SKSpriteNode(imageNamed: possibleAliens[0])
-        let randomAlienPosition = GKRandomDistribution(lowestValue: Int(-WIDTH/2), highestValue: Int(WIDTH/2))
+        let randomAlienPosition = GKRandomDistribution(lowestValue: Int(-WIDTH/2)+16, highestValue: Int(WIDTH/2)-16)
         let positionX = CGFloat(randomAlienPosition.nextInt())
         
-        alien.position = CGPoint(x: positionX, y: HEIGHT/2 - alien.size.height)
+        alien.position = CGPoint(x: positionX, y: HEIGHT/2)
         alien.physicsBody = SKPhysicsBody(rectangleOf: alien.size)
         alien.physicsBody?.isDynamic = true
         
+        alien.physicsBody?.categoryBitMask = alienCategory
+        alien.physicsBody?.contactTestBitMask = photonTorpedoCategory
+        alien.physicsBody?.collisionBitMask = 0
+        
+        self.addChild(alien)
+        
+        let animationDuration: TimeInterval = 6
+        var actionArray = [SKAction]()
+        let maxPositionY = -HEIGHT/2 - alien.size.height
+        
+        actionArray.append(SKAction.move(to: CGPoint(x: positionX, y: maxPositionY), duration: animationDuration))
+        actionArray.append(SKAction.removeFromParent())
+        
+        alien.run(SKAction.sequence(actionArray))
     }
     
     override func update(_ currentTime: TimeInterval) {
