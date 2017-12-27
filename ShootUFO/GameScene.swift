@@ -8,6 +8,7 @@
 
 import SpriteKit
 import GameplayKit
+import CoreMotion
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
@@ -27,6 +28,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var HEIGHT: CGFloat!
     let alienCategory: UInt32 = 0x01 << 1
     let photonTorpedoCategory: UInt32 = 0x01 << 0
+    let motionManager = CMMotionManager()
+    var xAcceleration: CGFloat = 0
     
     override func didMove(to view: SKView) {
         
@@ -54,6 +57,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.addChild(scoreLabel)
         
         gameTimer = Timer.scheduledTimer(timeInterval: 0.75, target: self, selector: #selector(addAlien), userInfo: nil, repeats: true)
+        
+        motionManager.accelerometerUpdateInterval = 0.1
+        motionManager.startAccelerometerUpdates(to: OperationQueue.current!) { (data: CMAccelerometerData?, error: Error?) in
+            if let accelerometerData = data {
+                let acceleration = accelerometerData.acceleration
+                self.xAcceleration = CGFloat(acceleration.x * 50)
+                print("acceleration x: \(self.xAcceleration)")
+            }
+        }
     }
     
     @objc func addAlien() {
@@ -151,6 +163,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         score += 5
+    }
+    
+    override func didSimulatePhysics() {
+        var movePositionX: CGFloat
+        if xAcceleration > 30 {
+            movePositionX = 30
+        } else if xAcceleration < -30 {
+            movePositionX = -30
+        } else {
+            movePositionX = xAcceleration
+        }
+        let multiplayWith = (WIDTH/2)/30
+        player.position.x = movePositionX * multiplayWith
     }
     
     override func update(_ currentTime: TimeInterval) {
