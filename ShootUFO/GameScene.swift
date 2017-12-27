@@ -84,6 +84,35 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         alien.run(SKAction.sequence(actionArray))
     }
     
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        fireTorpedo()
+    }
+    
+    func fireTorpedo() {
+        self.run(SKAction.playSoundFileNamed("torpedo.mp3", waitForCompletion: false))
+        
+        let torpedoNode = SKSpriteNode(imageNamed: "torpedo")
+        torpedoNode.position = player.position
+        torpedoNode.position.y += 5
+        
+        torpedoNode.physicsBody = SKPhysicsBody(circleOfRadius: torpedoNode.size.width/2)
+        torpedoNode.physicsBody?.isDynamic = true
+        torpedoNode.physicsBody?.categoryBitMask = photonTorpedoCategory
+        torpedoNode.physicsBody?.contactTestBitMask = alienCategory
+        torpedoNode.physicsBody?.collisionBitMask = 0
+        torpedoNode.physicsBody?.usesPreciseCollisionDetection = true
+        
+        self.addChild(torpedoNode)
+        
+        let animationDuration: TimeInterval = 0.4
+        var actionArray = [SKAction]()
+        
+        actionArray.append(SKAction.move(to: CGPoint(x: player.position.x, y: HEIGHT/2 + 10), duration: animationDuration))
+        actionArray.append(SKAction.removeFromParent())
+        
+        torpedoNode.run(SKAction.sequence(actionArray))
+    }
+    
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
     }
