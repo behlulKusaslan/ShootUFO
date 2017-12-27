@@ -9,14 +9,21 @@
 import SpriteKit
 import GameplayKit
 
-class GameScene: SKScene {
+class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var starField: SKEmitterNode!
     var player: SKSpriteNode!
+    var scoreLabel: SKLabelNode!
+    
+    var score: Int = 0{
+        didSet{
+            scoreLabel.text = "Score: \(score)"
+        }
+    }
     
     override func didMove(to view: SKView) {
         
-//        let WIDTH = self.frame.size.width
+        let WIDTH = self.frame.size.width
         let HEIGHT = self.frame.size.height
         
         starField = SKEmitterNode(fileNamed: "Starfield")
@@ -29,6 +36,16 @@ class GameScene: SKScene {
         player = SKSpriteNode(imageNamed: "shuttle")
         player.position = CGPoint(x: 0, y: -HEIGHT / 2 + 100)
         self.addChild(player)
+        
+        self.physicsWorld.gravity = CGVector(dx: 0, dy: 0)
+        self.physicsWorld.contactDelegate = self
+        
+        scoreLabel = SKLabelNode(text: "Score: 0")
+        scoreLabel.position = CGPoint(x: -WIDTH / 2 + scoreLabel.frame.size.width, y: HEIGHT / 2 - 60)
+        scoreLabel.fontName = "AmericanTypewriter-Bold"
+        scoreLabel.fontSize = 42
+        scoreLabel.fontColor = UIColor.white
+        self.addChild(scoreLabel)
         
     }
     
