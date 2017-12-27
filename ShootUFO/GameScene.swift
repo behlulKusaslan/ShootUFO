@@ -16,13 +16,19 @@ class GameScene: SKScene {
     
     override func didMove(to view: SKView) {
         
+//        let WIDTH = self.frame.size.width
+        let HEIGHT = self.frame.size.height
+        
         starField = SKEmitterNode(fileNamed: "Starfield")
         // TODO: find actual sizes for specific phone later
-        starField.position = CGPoint(x: 0.0, y: self.frame.size.height)
+        starField.position = CGPoint(x: 0.0, y: HEIGHT)
         starField.advanceSimulationTime(10)
+        starField.zPosition = -1
         self.addChild(starField)
         
-        starField.zPosition = -1
+        player = SKSpriteNode(imageNamed: "shuttle")
+        player.position = CGPoint(x: 0, y: -HEIGHT / 2 + 100)
+        self.addChild(player)
         
     }
     
