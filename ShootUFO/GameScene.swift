@@ -104,13 +104,53 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         self.addChild(torpedoNode)
         
-        let animationDuration: TimeInterval = 0.4
+        let animationDuration: TimeInterval = 1
         var actionArray = [SKAction]()
         
         actionArray.append(SKAction.move(to: CGPoint(x: player.position.x, y: HEIGHT/2 + 10), duration: animationDuration))
         actionArray.append(SKAction.removeFromParent())
         
         torpedoNode.run(SKAction.sequence(actionArray))
+    }
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        var firstBody: SKPhysicsBody
+        var secondBody: SKPhysicsBody
+        
+        if contact.bodyA.categoryBitMask < contact.bodyB.categoryBitMask {
+            firstBody = contact.bodyA
+            secondBody = contact.bodyB
+        } else {
+            firstBody = contact.bodyB
+            secondBody = contact.bodyA
+        }
+        
+        if (firstBody.categoryBitMask & photonTorpedoCategory) != 0 && (secondBody.categoryBitMask & alienCategory) != 0 {
+            guard let t = firstBody.node as? SKSpriteNode, let a = secondBody.node as? SKSpriteNode else {
+                print("firstBody and secondBody Error")
+                return
+            }
+            torpidoDidCollideWithAlien(torpedoNode: t, alienNode: a)
+        }
+
+    }
+    
+    func torpidoDidCollideWithAlien(torpedoNode: SKSpriteNode, alienNode: SKSpriteNode) {
+        guard let explosion = SKEmitterNode(fileNamed: "Explosion") else {
+            print("Explosion SKEmitterNode cast Error")
+            return
+        }
+        explosion.position = alienNode.position
+        self.addChild(explosion)
+        
+        self.run(SKAction.playSoundFileNamed("explosion.mp3", waitForCompletion: false))
+        torpedoNode.removeFromParent()
+        alienNode.removeFromParent()
+        self.run(SKAction.wait(forDuration: 1.5)) {
+            explosion.removeFromParent()
+        }
+        
+        score += 5
     }
     
     override func update(_ currentTime: TimeInterval) {
